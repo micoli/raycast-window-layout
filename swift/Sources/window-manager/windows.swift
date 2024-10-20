@@ -2,25 +2,26 @@ import Quartz
 import Foundation
 import CoreGraphics
 import ArgumentParser
+import Darwin
 
 struct Window {
-  var pid = 0
+  var pid: Int32 = 0
   var ownerName = ""
   var name = ""
-  var x = 0
-  var y = 0
+  var posX = 0
+  var posY = 0
   var width = 0
   var height = 0
-  var number:UInt32 = 0
-  var screen:UInt32 = 0
+  var number: UInt32 = 0
+  var screen: UInt32 = 0
 
-  func convertToDictionary() -> [String : Any] {
+  func convertToDictionary() -> [String: Any] {
     return [
         "pid": self.pid,
         "ownerName": self.ownerName,
         "name": self.name,
-        "x": self.x,
-        "y": self.y,
+        "x": self.posX,
+        "y": self.posY,
         "width": self.width,
         "height": self.height,
         "number": self.number,
@@ -29,9 +30,9 @@ struct Window {
   }
 }
 
-func getWindows(onScreenOnly: Bool) -> [Window] {
+func listWindows(onScreenOnly: Bool) -> [Window] {
   var windows: [Window] = []
-  let displays:[Display] = getDisplays()
+  let displays: [Display] = listDisplays()
 
   var options = CGWindowListOption(arrayLiteral: CGWindowListOption.excludeDesktopElements)
   if onScreenOnly {
@@ -46,28 +47,28 @@ func getWindows(onScreenOnly: Bool) -> [Window] {
     let minWinSize: Int = 50
 
     if (dict.value(forKey: "kCGWindowAlpha") as! Double) == 0 {
-      continue;
+      continue
     }
 
     let bounds = dict.value(forKey: "kCGWindowBounds") as! NSDictionary
 
-    let x = bounds.value(forKey: "X")! as! Int
-    let y = bounds.value(forKey: "Y")! as! Int
+    let posX = bounds.value(forKey: "X")! as! Int
+    let posY = bounds.value(forKey: "Y")! as! Int
     let width = bounds.value(forKey: "Width")! as! Int
     let height = bounds.value(forKey: "Height")! as! Int
 
     if width < minWinSize || height < minWinSize {
-      continue;
+      continue
     }
 
-    let pid = dict.value(forKey: "kCGWindowOwnerPID") as! Int
+    let pid = dict.value(forKey: "kCGWindowOwnerPID") as! Int32
 
     var ownerName = ""
     if dict.value(forKey: "kCGWindowOwnerName") != nil {
       ownerName = dict.value(forKey: "kCGWindowOwnerName") as! String
     }
 
-    var number:UInt32 = 0
+    var number: UInt32 = 0
     if dict.value(forKey: "kCGWindowNumber") != nil {
       number = dict.value(forKey: "kCGWindowNumber") as! UInt32
     }
@@ -76,19 +77,17 @@ func getWindows(onScreenOnly: Bool) -> [Window] {
     if dict.value(forKey: "kCGWindowName") != nil {
       name = dict.value(forKey: "kCGWindowName") as! String
     }
-    var screen:UInt32=0
-    let windowRect = CGRect(x:x,y:y,width:width,height:height)
-    for display in displays {
-        if CGRectContainsRect(CGDisplayBounds(display.id), windowRect) {
-            screen = display.id;
-        }
+    var screen: UInt32 = 0
+    let windowRect = CGRect(x: posX, y: posY, width: width, height: height)
+    for display in displays where CGRectContainsRect(CGDisplayBounds(display.id), windowRect) {
+        screen = display.id
     }
     windows.append(Window(
         pid: pid,
         ownerName: ownerName,
         name: name,
-        x: x,
-        y: y,
+        posX: posX,
+        posY: posY,
         width: width,
         height: height,
         number: number,
@@ -97,6 +96,41 @@ func getWindows(onScreenOnly: Bool) -> [Window] {
   }
 
   return windows
+}
+
+func resizeWindow(number: Int, posX: Int, posY: Int, width: Int, height: Int) -> String {
+
+    for entry  in listWindows(onScreenOnly: true)
+    {
+        if entry.number != number {
+            continue
+        }
+        let appRef = AXUIElementCreateApplication(entry.pid);
+
+        var value: AnyObject?
+        _ = AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &value)
+        if let windowList = value as? [AXUIElement] {
+            if windowList.first == nil {
+                continue
+            }
+            var newPoint = CGPoint(x: posX, y: posY)
+            var newSize = CGSize(width: width, height: height)
+
+            AXUIElementSetAttributeValue(
+                windowList.first!,
+                kAXPositionAttribute as CFString,
+                AXValueCreate(AXValueType(rawValue: kAXValueCGPointType)!,&newPoint)!
+            );
+
+            AXUIElementSetAttributeValue(
+                windowList.first!,
+                kAXSizeAttribute as CFString,
+                AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!
+            );
+        }
+    }
+
+    return ""
 }
 
 func windowsToJson(windows: [Window]) -> String {

@@ -4,40 +4,43 @@ import CoreGraphics
 import ArgumentParser
 
 struct Display {
-  var id:UInt32 = 0
-  var x = 0
-  var y = 0
+  var id: UInt32 = 0
+  var posX = 0
+  var posY = 0
   var width = 0
   var height = 0
 
-  func convertToDictionary() -> [String : Any] {
+  func convertToDictionary() -> [String: Any] {
     return [
         "id": self.id,
-        "x": self.x,
-        "y": self.y,
+        "x": self.posX,
+        "y": self.posY,
         "width": self.width,
         "height": self.height
     ]
   }
 }
 
-func getDisplays() -> [Display] {
+func listDisplays() -> [Display] {
     let maxDisplays: UInt32 = 16
     var onlineDisplays = [CGDirectDisplayID](repeating: 0, count: Int(maxDisplays))
     var displayCount: UInt32 = 0
 
-    let dErr = CGGetOnlineDisplayList(maxDisplays, &onlineDisplays, &displayCount)
+    _ = CGGetOnlineDisplayList(maxDisplays, &onlineDisplays, &displayCount)
 
     var displays: [Display] = []
 
     for currentDisplay in onlineDisplays[0..<Int(displayCount)] {
+        let bounds = CGDisplayBounds(currentDisplay)
         displays.append(Display(
-            id:currentDisplay,
-            width:CGDisplayPixelsHigh(currentDisplay),
-            height:CGDisplayPixelsWide(currentDisplay)
+            id: currentDisplay,
+            posX: Int(bounds.minX),
+            posY: Int(bounds.minY),
+            width: CGDisplayPixelsWide(currentDisplay),
+            height: CGDisplayPixelsHigh(currentDisplay)
         ))
     }
-    return displays;
+    return displays
 }
 
 func displaysToJson(displays: [Display]) -> String {

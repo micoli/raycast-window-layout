@@ -15,14 +15,14 @@
       "name": "layout",
       "title": "layout",
       "description": "",
-      "mode": "no-view"
+      "mode": "view"
     }
   ],
   "dependencies": {
     "@raycast/api": "^1.84.3",
     "@raycast/utils": "^1.17.0",
-    "mac-windows": "^1.0.0",
-    "node-window-manager": "^2.2.4"
+    "execa": "^9.4.1",
+    "react-svg-to-image": "^3.0.0"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.11",
@@ -39,6 +39,8 @@
     "lint": "ray lint",
     "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
     "publish": "npx @raycast/api@latest publish",
-    "build-mac-windows": "swift build -c release --package-path swift  && cp swift/.build/release/window-manager ./assets/window-manager"
+    "build-window-manager": "rm ./assets/window-manager; swift build -c release --package-path swift  && cp swift/.build/release/window-manager ./assets/window-manager && chmod +x ./assets/window-manager",
+    "swift-lint": "cd swift && swift package plugin swiftlint",
+    "swift-lint-fix": "cd swift && swift package plugin swiftlint --autocorrect"
   }
 }
