@@ -1,8 +1,8 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "raycast-lay",
-  "title": "raycast-lay",
-  "description": "",
+  "name": "raycast-window-manager",
+  "title": "Layout Manager",
+  "description": "A window layout manager",
   "icon": "extension-icon.png",
   "author": "micoli",
   "categories": [
@@ -12,15 +12,15 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "layout",
+      "name": "window-manager-command",
       "title": "layout",
-      "description": "",
+      "description": "A window layout manager",
       "mode": "view"
     }
   ],
   "dependencies": {
     "@raycast/api": "^1.84.3",
-    "@raycast/utils": "^1.17.0",
+    "@raycast/utils": "^1.18.0",
     "execa": "^9.4.1",
     "react-svg-to-image": "^3.0.0"
   },
