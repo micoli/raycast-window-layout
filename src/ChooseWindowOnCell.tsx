@@ -23,17 +23,21 @@ export const ChooseWindowOnCell = ({ windows, cellIndex, setWindowNumber }) => {
         <List.Item
           key={`${window.number}`}
           title={formatWindowTitle(window)}
+          icon={window.icon}
           actions={
             <ActionPanel>
-              <Action title="Select" onAction={() => {
-                console.log(`${window} selected`)
-                setWindowNumber(cellIndex, window.number);
-                pop();
-              }} />
+              <Action
+                title="Select"
+                onAction={() => {
+                  console.log(`${window} selected`);
+                  setWindowNumber(cellIndex, window.number);
+                  pop();
+                }}
+              />
             </ActionPanel>
           }
         />
       ))}
     </List>
   );
-}
+};

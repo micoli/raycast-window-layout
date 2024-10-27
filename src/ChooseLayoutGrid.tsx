@@ -1,4 +1,4 @@
-import { enumerateCells, formatWindowTitle, Layout, layoutDefinitionsToSVG } from "./common";
+import { CellWindowNumberMap, enumerateCells, formatWindowTitle, Layout, layoutDefinitionsToSVG } from "./common";
 import { Action, ActionPanel, Grid, showToast, Toast, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { Display, listDisplays, listWindows, Window } from "./WindowManager";
@@ -10,7 +10,7 @@ export const ChooseLayoutGrid = ({ layout }: { layout: Layout }) => {
   const [windows, setWindows] = useState<Window[]>([]);
   const [displays, setDisplays] = useState<Display[]>([]);
   const [isComplete, setIsComplete] = useState<boolean>(false);
-  const [cellWindowNumberMap, setCellWindowNumberMap] = useState<{ [p: string]: string | null }>(
+  const [cellWindowNumberMap, setCellWindowNumberMap] = useState<CellWindowNumberMap>(
     enumerateCells(layout.rows).reduce((carry, item) => {
       carry[item.index] = null;
       return carry;
@@ -43,19 +43,26 @@ export const ChooseLayoutGrid = ({ layout }: { layout: Layout }) => {
   const setWindowNumber = (cellIndex, windowNumber) => {
     setCellWindowNumberMap({
       ...cellWindowNumberMap,
-      [cellIndex]: windowNumber
+      [cellIndex]: windowNumber,
     });
-  }
+  };
 
   const getApplicationTitle = (index: number) => {
     const windowNumber = cellWindowNumberMap[index];
 
-    if (windowNumber === null) {
-      return "---";
-    }
+    return windowNumber === null ? null : formatWindowTitle(windows.filter((win) => win.number == windowNumber)[0]);
+  };
 
-    return formatWindowTitle(windows.filter(win => win.number == windowNumber)[0]);
-  }
+  const getApplicationIcon = (index: number) => {
+    const windowNumber = cellWindowNumberMap[index];
+
+    return windowNumber === null ? null : windows.filter((win) => win.number == windowNumber)[0].icon;
+  };
+
+  const allIcons = Object.entries(cellWindowNumberMap).reduce((carry, _windowNumber, index) => {
+    carry[index] = getApplicationIcon(index);
+    return carry;
+  }, {});
 
   return (
     <Grid
@@ -69,38 +76,35 @@ export const ChooseLayoutGrid = ({ layout }: { layout: Layout }) => {
       {enumerateCells(layout.rows).map((cell, index) => (
         <Grid.Item
           key={`${cell.index}`}
-          title={getApplicationTitle(index)}
-          content={layoutDefinitionsToSVG(layout, index)}
+          title={getApplicationTitle(index) ?? ""}
+          content={layoutDefinitionsToSVG(layout, index, { [index]: getApplicationIcon(index) })}
           actions={
             <ActionPanel>
               <Action
-                title="Select a Cell"
-                onAction={() => push(
-                  <ChooseWindowOnCell
-                    windows={windows}
-                    cellIndex={cell.index}
-                    setWindowNumber={setWindowNumber}
-                  />
-                )}
+                title="Select an Application"
+                onAction={() =>
+                  push(
+                    <ChooseWindowOnCell windows={windows} cellIndex={cell.index} setWindowNumber={setWindowNumber} />,
+                  )
+                }
               />
             </ActionPanel>
           }
         />
       ))}
-      {isComplete && displays.map(display=> (
-        <Grid.Item
-          key={`activate`}
-          title={`Do layout on isplay ${display.id} [${display.width}x${display.height}]`}
-          content={layoutDefinitionsToSVG(layout, 'ok')}
-          actions={
-            <ActionPanel>
-              <Action
-                title="Activate layout"
-                onAction={() => doLayout(layout.rows, displays, cellWindowNumberMap)}
-              />
-            </ActionPanel>
-          }
-        />))}
+      {isComplete &&
+        displays.map((display) => (
+          <Grid.Item
+            key={`activate`}
+            title={`Do Layout on Display ${display.id} [${display.width}x${display.height}]`}
+            content={layoutDefinitionsToSVG(layout, "ok", allIcons)}
+            actions={
+              <ActionPanel>
+                <Action title="Activate Layout" onAction={() => doLayout(layout.rows, display, cellWindowNumberMap)} />
+              </ActionPanel>
+            }
+          />
+        ))}
     </Grid>
   );
-}
+};

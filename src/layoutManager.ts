@@ -1,7 +1,7 @@
 import { Display, resizeWindow } from "./WindowManager";
-import { enumerateCells } from "./common";
+import { CellWindowNumberMap, enumerateCells } from "./common";
 
-export const doLayout = (rows, displays: Display[], cellWindowNumberMap: { [p: string]: unknown }) => {
+export const doLayout = (rows, displays: Display, cellWindowNumberMap: CellWindowNumberMap) => {
   const [unitWidth, unitHeight] = enumerateCells(rows).reduce(
     ([unitWidth, unitHeight], cell) => [
       Math.max(unitWidth, cell.x + cell.width),
@@ -9,7 +9,7 @@ export const doLayout = (rows, displays: Display[], cellWindowNumberMap: { [p: s
     ],
     [0, 0],
   );
-  const [pixelX, pixelY] = [Math.trunc(displays[0].width / unitWidth), Math.trunc(displays[0].height / unitHeight)];
+  const [pixelX, pixelY] = [Math.trunc(displays.width / unitWidth), Math.trunc(displays.height / unitHeight)];
   for (const cell of enumerateCells(rows)) {
     resizeWindow(
       cellWindowNumberMap[cell.index],
@@ -19,10 +19,4 @@ export const doLayout = (rows, displays: Display[], cellWindowNumberMap: { [p: s
       cell.height * pixelY,
     ).then((_) => console.log);
   }
-
-  console.log("--");
-  console.log(cellWindowNumberMap);
-  console.log(displays[0]);
-  console.log(unitWidth, unitHeight);
-  console.log("activate", unitWidth, unitHeight, cellWindowNumberMap);
 };

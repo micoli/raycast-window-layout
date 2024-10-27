@@ -14,6 +14,7 @@ struct Window {
   var height = 0
   var number: UInt32 = 0
   var screen: UInt32 = 0
+  var icon = ""
 
   func convertToDictionary() -> [String: Any] {
     return [
@@ -25,9 +26,40 @@ struct Window {
         "width": self.width,
         "height": self.height,
         "number": self.number,
-        "screen": self.screen
+        "screen": self.screen,
+        "icon": self.icon
     ]
   }
+}
+
+extension CGImage {
+    func resize(size:CGSize) -> CGImage? {
+        let width: Int = Int(size.width)
+        let height: Int = Int(size.height)
+
+        let bytesPerPixel = self.bitsPerPixel / self.bitsPerComponent
+        let destBytesPerRow = width * bytesPerPixel
+
+
+        guard let colorSpace = self.colorSpace else { return nil }
+        guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: self.bitsPerComponent, bytesPerRow: destBytesPerRow, space: colorSpace, bitmapInfo: self.alphaInfo.rawValue) else { return nil }
+
+        context.interpolationQuality = .high
+        context.draw(self, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        return context.makeImage()
+    }
+}
+
+extension NSImage {
+    func base64String() -> String? {
+        if let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil)?.resize(size: CGSize(width: 32,height: 32)){
+            let bitmapRep = NSBitmapImageRep(cgImage: cgImage)
+            let pngData = bitmapRep.representation(using: NSBitmapImageRep.FileType.png, properties: [:])!
+            return "data:image/png;base64, "+pngData.base64EncodedString()
+        }
+        return nil
+    }
 }
 
 func listWindows(onScreenOnly: Bool) -> [Window] {
@@ -43,6 +75,7 @@ func listWindows(onScreenOnly: Bool) -> [Window] {
 
   for window in windowList {
     let dict = (window as! NSDictionary)
+
 
     let minWinSize: Int = 50
 
@@ -68,6 +101,11 @@ func listWindows(onScreenOnly: Bool) -> [Window] {
       ownerName = dict.value(forKey: "kCGWindowOwnerName") as! String
     }
 
+    let app = NSRunningApplication(processIdentifier: pid)
+    var icon = ""
+    if let appIcon = app?.icon {
+        icon = appIcon.base64String() ?? ""
+    }
     var number: UInt32 = 0
     if dict.value(forKey: "kCGWindowNumber") != nil {
       number = dict.value(forKey: "kCGWindowNumber") as! UInt32
@@ -77,11 +115,13 @@ func listWindows(onScreenOnly: Bool) -> [Window] {
     if dict.value(forKey: "kCGWindowName") != nil {
       name = dict.value(forKey: "kCGWindowName") as! String
     }
+
     var screen: UInt32 = 0
     let windowRect = CGRect(x: posX, y: posY, width: width, height: height)
     for display in displays where CGRectContainsRect(CGDisplayBounds(display.id), windowRect) {
         screen = display.id
     }
+
     windows.append(Window(
         pid: pid,
         ownerName: ownerName,
@@ -91,7 +131,8 @@ func listWindows(onScreenOnly: Bool) -> [Window] {
         width: width,
         height: height,
         number: number,
-        screen: screen
+        screen: screen,
+        icon: icon
     ))
   }
 
