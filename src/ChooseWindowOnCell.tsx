@@ -29,7 +29,6 @@ export const ChooseWindowOnCell = ({ windows, cellIndex, setWindowNumber }) => {
               <Action
                 title="Select"
                 onAction={() => {
-                  console.log(`${window} selected`);
                   setWindowNumber(cellIndex, window.number);
                   pop();
                 }}
