@@ -13,7 +13,7 @@
   "commands": [
     {
       "name": "window-manager-command",
-      "title": "layout",
+      "title": "Layout Manager",
       "description": "A window layout manager",
       "mode": "view"
     }
