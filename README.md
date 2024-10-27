@@ -11,5 +11,5 @@ npm install && npm run dev
 ```
 
 ### Todo
-- [ ] Filter out other selected windows on window selection
+- [x] Filter out other selected windows on window selection
 - [x] Display icons

@@ -1,15 +1,39 @@
 import { Action, ActionPanel, List, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { formatWindowTitle } from "./common";
+import { CellWindowNumberMap, formatWindowTitle } from "./common";
+import { Window } from "./WindowManager";
 
-export const ChooseWindowOnCell = ({ windows, cellIndex, setWindowNumber }) => {
+export const ChooseWindowOnCell = ({
+  windows,
+  cellIndex,
+  setWindowNumber,
+  cellWindowNumberMap,
+}: {
+  windows: Window[];
+  cellIndex: number;
+  setWindowNumber: (cellIndex: number, windowNumber: number) => void;
+  cellWindowNumberMap: CellWindowNumberMap;
+}) => {
   const { pop } = useNavigation();
   const [searchText, setSearchText] = useState("");
   const [filteredList, filterList] = useState(windows);
+  const otherWindowNumbers = [];
+  for (const [index, value] of Object.entries(cellWindowNumberMap)) {
+    if (index != cellIndex && value !== null) {
+      otherWindowNumbers.push(value);
+    }
+  }
 
   useEffect(() => {
     const searchString = searchText.toLocaleLowerCase();
-    filterList(windows.filter((item) => formatWindowTitle(item).toLocaleLowerCase().includes(searchString)));
+
+    filterList(
+      windows.filter(
+        (window) =>
+          formatWindowTitle(window).toLocaleLowerCase().includes(searchString) &&
+          !otherWindowNumbers.includes(window.number),
+      ),
+    );
   }, [searchText]);
 
   return (

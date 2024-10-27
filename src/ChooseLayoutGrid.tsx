@@ -84,7 +84,12 @@ export const ChooseLayoutGrid = ({ layout }: { layout: Layout }) => {
                 title="Select an Application"
                 onAction={() =>
                   push(
-                    <ChooseWindowOnCell windows={windows} cellIndex={cell.index} setWindowNumber={setWindowNumber} />,
+                    <ChooseWindowOnCell
+                      windows={windows}
+                      cellIndex={cell.index}
+                      setWindowNumber={setWindowNumber}
+                      cellWindowNumberMap={cellWindowNumberMap}
+                    />,
                   )
                 }
               />
