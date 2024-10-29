@@ -56,8 +56,11 @@ extension Command {
         @Argument(help: "Height.")
         var height: Int = 0
 
+        @Flag(name: [.long, .customShort("t")], help: "set the window is the topmost window.")
+        var topMost = false
+
         mutating func run() {
-            print(resizeWindow(number: number, posX: posX, posY: posY, width: width, height: height))
+            print(resizeWindow(number: number, posX: posX, posY: posY, width: width, height: height,topMost: topMost))
         }
     }
 }

@@ -47,8 +47,8 @@ export async function listDisplays(): Promise<Display[]> {
 
 export async function resizeWindow(windowNumber, x, y, width, height) {
   try {
-    console.log(`${binaryPath} resize-window ${windowNumber} ${x} ${y} ${width} ${height}`);
-    await execa`${binaryPath} resize-window ${windowNumber} ${x} ${y} ${width} ${height}`;
+    console.log(`${binaryPath} resize-window ${windowNumber} ${x} ${y} ${width} ${height} --top-most`);
+    await execa`${binaryPath} resize-window ${windowNumber} ${x} ${y} ${width} ${height} --top-most`;
   } catch (error) {
     console.log(error);
   }

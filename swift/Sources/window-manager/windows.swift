@@ -139,7 +139,7 @@ func listWindows(onScreenOnly: Bool) -> [Window] {
   return windows
 }
 
-func resizeWindow(number: Int, posX: Int, posY: Int, width: Int, height: Int) -> String {
+func resizeWindow(number: Int, posX: Int, posY: Int, width: Int, height: Int, topMost: Bool) -> String {
 
     for entry  in listWindows(onScreenOnly: true)
     {
@@ -168,6 +168,9 @@ func resizeWindow(number: Int, posX: Int, posY: Int, width: Int, height: Int) ->
                 kAXSizeAttribute as CFString,
                 AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!
             );
+
+            let app = NSRunningApplication(processIdentifier: entry.pid)
+            app?.activate(options: .activateIgnoringOtherApps)
         }
     }
 
