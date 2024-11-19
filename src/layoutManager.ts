@@ -1,7 +1,8 @@
 import { Display, resizeWindow } from "./WindowManager";
 import { CellWindowNumberMap, enumerateCells } from "./common";
+import { closeMainWindow } from "@raycast/api";
 
-export const doLayout = (rows, displays: Display, cellWindowNumberMap: CellWindowNumberMap) => {
+export const doLayout = async (rows, displays: Display, cellWindowNumberMap: CellWindowNumberMap) => {
   const [unitWidth, unitHeight] = enumerateCells(rows).reduce(
     ([unitWidth, unitHeight], cell) => [
       Math.max(unitWidth, cell.x + cell.width),
@@ -11,12 +12,13 @@ export const doLayout = (rows, displays: Display, cellWindowNumberMap: CellWindo
   );
   const [pixelX, pixelY] = [Math.trunc(displays.width / unitWidth), Math.trunc(displays.height / unitHeight)];
   for (const cell of enumerateCells(rows)) {
-    resizeWindow(
+    await resizeWindow(
       cellWindowNumberMap[cell.index],
       cell.x * pixelX,
       cell.y * pixelY,
       cell.width * pixelX,
       cell.height * pixelY,
-    ).then((_) => console.log);
+    );
   }
+  await closeMainWindow();
 };
